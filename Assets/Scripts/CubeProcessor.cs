@@ -3,7 +3,6 @@ using UnityEngine;
 public class CubeProcessor : MonoBehaviour
 {
     [SerializeField] private CubeSpawner _spawner;
-    [SerializeField] private CubeToucher _toucher;
     [SerializeField] private RandomTimer _timer;
 
     [SerializeField] private float _creationRadius = 10f;
@@ -13,13 +12,11 @@ public class CubeProcessor : MonoBehaviour
 
     private void OnEnable()
     {
-        _toucher.CubeTouched += ProcessCubeTouched;
         _timer.TimerExhausted += ProcessTimerExhausted;
     }
 
     private void OnDisable()
     {
-        _toucher.CubeTouched -= ProcessCubeTouched;
         _timer.TimerExhausted -= ProcessTimerExhausted;
     }
 
@@ -31,6 +28,8 @@ public class CubeProcessor : MonoBehaviour
 
             cube.gameObject.GetComponent<Renderer>().material.color = Random.ColorHSV();
 
+            cube.PlatformTouched -= ProcessCubeTouched;
+
             float timeToRemove = Random.Range(_minRemoveTime, _maxRemoveTime);
 
             _spawner.RemoveDelayed(cube, timeToRemove);
@@ -39,9 +38,10 @@ public class CubeProcessor : MonoBehaviour
 
     private void ProcessTimerExhausted()
     {
-        Vector3 position = Random.insideUnitCircle * _creationRadius;
-        position += transform.position;
+        var randomPositionInCircle = Random.insideUnitCircle * _creationRadius;
+        Vector3 position = new Vector3(randomPositionInCircle.x, 0, randomPositionInCircle.y) + transform.position;
 
-        _spawner.SpawnInPosition(position);
+        var cube = _spawner.SpawnInPosition(position);
+        cube.PlatformTouched += ProcessCubeTouched;
     }
 }

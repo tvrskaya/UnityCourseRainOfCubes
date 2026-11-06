@@ -23,10 +23,12 @@ public class CubeSpawner : MonoBehaviour
         );
     }
 
-    public void SpawnInPosition(Vector3 position)
+    public Cube SpawnInPosition(Vector3 position)
     {
         var cube = _cubesPool.Get();
         cube.transform.position = position;
+
+        return cube;
     }
 
     public void Remove(Cube cube)
@@ -48,8 +50,13 @@ public class CubeSpawner : MonoBehaviour
     private void ActionOnGet(GameObject obj)
     {
         obj.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
+        obj.transform.position = Vector3.zero;
+        obj.transform.rotation = Quaternion.identity;
+
         obj.SetActive(true);
-        obj.GetComponent<Renderer>().material.color = _cubePrefab.GetComponent<Renderer>().material.color;
+        obj.GetComponent<Renderer>().material.color = _cubePrefab.GetComponent<Renderer>().sharedMaterial.color;
+        if (obj.TryGetComponent<ProcessedCube>(out var component))
+            Destroy(component);
     }
 
 }
